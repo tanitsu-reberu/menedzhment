@@ -501,6 +501,7 @@ const defaultState = {
 let state = loadState();
 let activeMode = "flashcards";
 let cardFullscreen = false;
+let topicDrawerOpen = false;
 let cardIndex = 0;
 let quizOrder = shuffle([...questions.keys()]);
 let quizIndex = 0;
@@ -518,8 +519,13 @@ const els = {
   flashcardsView: document.getElementById("flashcardsView"),
   quizView: document.getElementById("quizView"),
   achievementsView: document.getElementById("achievementsView"),
+  topicRail: document.getElementById("topicRail"),
   topicList: document.getElementById("topicList"),
   topicCount: document.getElementById("topicCount"),
+  topicDrawerToggle: document.getElementById("topicDrawerToggle"),
+  topicDrawerBackdrop: document.getElementById("topicDrawerBackdrop"),
+  closeTopicDrawerButton: document.getElementById("closeTopicDrawerButton"),
+  activeTopicLabel: document.getElementById("activeTopicLabel"),
   cardTopic: document.getElementById("cardTopic"),
   cardCounter: document.getElementById("cardCounter"),
   cardPriority: document.getElementById("cardPriority"),
@@ -642,15 +648,44 @@ function renderTopics() {
       cardIndex = firstCardIndex;
       setMode("flashcards");
       renderCard();
+      closeTopicDrawer();
     });
     els.topicList.appendChild(button);
   });
+}
+
+function updateActiveTopicLabel() {
+  if (els.activeTopicLabel) {
+    els.activeTopicLabel.textContent = cards[cardIndex].topic;
+  }
+}
+
+function setTopicDrawer(open) {
+  if (topicDrawerOpen === open) return;
+  topicDrawerOpen = open;
+  document.body.classList.toggle("topic-drawer-open", open);
+  els.topicRail.classList.toggle("is-open", open);
+  els.topicDrawerToggle.setAttribute("aria-expanded", String(open));
+  els.topicDrawerBackdrop.hidden = !open;
+}
+
+function openTopicDrawer() {
+  setTopicDrawer(true);
+}
+
+function closeTopicDrawer() {
+  setTopicDrawer(false);
+}
+
+function toggleTopicDrawer() {
+  setTopicDrawer(!topicDrawerOpen);
 }
 
 function renderCard() {
   const card = cards[cardIndex];
   els.flashcard.classList.remove("flipped");
   els.cardTopic.textContent = card.topic;
+  updateActiveTopicLabel();
   els.cardCounter.textContent = `${cardIndex + 1} / ${cards.length}`;
   els.cardPriority.textContent = card.priority;
   els.cardTerm.textContent = card.term;
@@ -801,6 +836,7 @@ function updateFullscreenUi() {
 
 function setCardFullscreen(enabled) {
   if (cardFullscreen === enabled) return;
+  if (enabled) closeTopicDrawer();
   cardFullscreen = enabled;
   document.body.classList.toggle("card-fullscreen-active", enabled);
   els.flashcardsView.classList.toggle("is-fullscreen", enabled);
@@ -821,11 +857,14 @@ function setMode(mode) {
   if (mode !== "flashcards" && cardFullscreen) {
     setCardFullscreen(false);
   }
+  closeTopicDrawer();
 
   activeMode = mode;
   const isFlash = mode === "flashcards";
   const isQuiz = mode === "quiz";
   const isAchievements = mode === "achievements";
+
+  els.topicDrawerToggle.hidden = isAchievements;
 
   els.flashModeButton.classList.toggle("active", isFlash);
   els.quizModeButton.classList.toggle("active", isQuiz);
@@ -853,6 +892,9 @@ els.flashcard.addEventListener("click", flipCard);
 els.nextCardButton.addEventListener("click", nextCard);
 els.prevCardButton.addEventListener("click", prevCard);
 els.toggleFullscreenButton.addEventListener("click", toggleCardFullscreen);
+els.topicDrawerToggle.addEventListener("click", toggleTopicDrawer);
+els.closeTopicDrawerButton.addEventListener("click", closeTopicDrawer);
+els.topicDrawerBackdrop.addEventListener("click", closeTopicDrawer);
 els.nextQuestionButton.addEventListener("click", nextQuestion);
 els.restartQuizButton.addEventListener("click", restartQuiz);
 els.flashModeButton.addEventListener("click", () => setMode("flashcards"));
@@ -861,6 +903,11 @@ els.achievementsButton.addEventListener("click", () => setMode("achievements"));
 els.resetButton.addEventListener("click", resetProgress);
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && topicDrawerOpen) {
+    closeTopicDrawer();
+    return;
+  }
+
   if (event.key === "Escape" && cardFullscreen) {
     setCardFullscreen(false);
     return;

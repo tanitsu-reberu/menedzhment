@@ -242,6 +242,16 @@ svg {
   align-items: start;
 }
 
+.topic-rail {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.study-panel {
+  grid-column: 2;
+  grid-row: 1;
+}
+
 .topic-rail,
 .study-panel {
   border-radius: 8px;
@@ -319,6 +329,97 @@ svg {
   border-color: var(--topic-color, var(--teal));
   background: #151b20;
   transform: translateX(2px);
+}
+
+.topic-drawer-toggle,
+.topic-drawer-backdrop,
+.topic-drawer-close {
+  display: none;
+}
+
+.topic-drawer-toggle {
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: rgba(21, 26, 31, 0.86);
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.topic-drawer-toggle:hover {
+  border-color: rgba(55, 212, 188, 0.65);
+  background: #151b20;
+}
+
+.topic-drawer-toggle-icon,
+.topic-drawer-toggle-chevron,
+.topic-drawer-close svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.topic-drawer-toggle-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.topic-drawer-toggle-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.topic-drawer-toggle-text strong {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 480;
+  background: rgba(4, 6, 8, 0.62);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+body.topic-drawer-open .topic-drawer-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.topic-drawer-close {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #101418;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.topic-drawer-close:hover {
+  color: var(--coral);
+  border-color: rgba(255, 107, 107, 0.65);
 }
 
 .study-panel {
@@ -863,47 +964,93 @@ svg {
     gap: 8px;
   }
 
+  .topic-rail,
+  .study-panel {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .topic-drawer-toggle {
+    display: flex;
+  }
+
+  .topic-drawer-backdrop {
+    display: block;
+  }
+
+  .topic-drawer-close {
+    display: grid;
+  }
+
+  .topic-drawer-toggle[hidden] {
+    display: none !important;
+  }
+
   .topic-rail {
-    position: static;
-    padding: 8px;
-    border-radius: 6px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 490;
+    width: min(300px, 86vw);
+    margin: 0;
+    padding:
+      calc(12px + env(safe-area-inset-top, 0px))
+      calc(12px + env(safe-area-inset-right, 0px))
+      calc(12px + env(safe-area-inset-bottom, 0px))
+      calc(12px + env(safe-area-inset-left, 0px));
+    border-radius: 0;
+    border-left: none;
+    border-top: none;
+    border-bottom: none;
+    transform: translateX(-105%);
+    transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .topic-rail.is-open {
+    transform: translateX(0);
+  }
+
+  body.topic-drawer-open {
+    overflow: hidden;
   }
 
   .rail-head {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
     font-size: 0.72rem;
+    gap: 8px;
   }
 
   .topic-list {
-    display: flex;
-    overflow-x: auto;
-    max-height: none;
-    gap: 6px;
-    padding-bottom: 2px;
+    display: grid;
+    gap: 8px;
+    max-height: calc(100dvh - 88px);
+    overflow-y: auto;
+    padding-right: 2px;
     -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
   }
 
   .topic-button {
-    min-width: 128px;
-    min-height: 44px;
-    padding: 6px 8px;
-    flex-shrink: 0;
-    scroll-snap-align: start;
+    min-width: 0;
+    width: 100%;
+    min-height: 52px;
+    padding: 8px 10px;
     border-radius: 6px;
+    flex-shrink: 0;
   }
 
   .topic-button::before {
-    height: 26px;
+    height: 30px;
   }
 
   .topic-button strong {
-    font-size: 0.78rem;
+    font-size: 0.86rem;
   }
 
   .topic-button small {
-    font-size: 0.65rem;
-    margin-top: 1px;
+    font-size: 0.68rem;
+    margin-top: 2px;
   }
 
   .study-panel {
@@ -1083,8 +1230,8 @@ svg {
     grid-template-columns: 48px 48px 32px;
   }
 
-  .topic-button {
-    min-width: 112px;
+  .topic-rail {
+    width: min(280px, 92vw);
   }
 
   .badge-grid {

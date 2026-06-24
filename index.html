@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Экстренная подготовка: Управление проектами</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -38,6 +38,12 @@
     </symbol>
     <symbol id="icon-close" viewBox="0 0 24 24">
       <path d="M6 6l12 12M18 6 6 18"></path>
+    </symbol>
+    <symbol id="icon-list" viewBox="0 0 24 24">
+      <path d="M4 7h16M4 12h16M4 17h16"></path>
+    </symbol>
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+      <path d="M9 6l6 6-6 6"></path>
     </symbol>
   </svg>
 
@@ -91,10 +97,24 @@
     </section>
 
     <section class="workspace">
-      <aside class="topic-rail" aria-label="Темы экзамена">
+      <button class="topic-drawer-toggle" id="topicDrawerToggle" type="button" aria-expanded="false" aria-controls="topicRail">
+        <svg class="topic-drawer-toggle-icon"><use href="#icon-list"></use></svg>
+        <span class="topic-drawer-toggle-text">
+          <span class="topic-drawer-toggle-label">Тема</span>
+          <strong id="activeTopicLabel">Проект</strong>
+        </span>
+        <svg class="topic-drawer-toggle-chevron"><use href="#icon-chevron-right"></use></svg>
+      </button>
+
+      <div class="topic-drawer-backdrop" id="topicDrawerBackdrop" hidden></div>
+
+      <aside class="topic-rail" id="topicRail" aria-label="Темы экзамена">
         <div class="rail-head">
           <span>Темы</span>
           <strong id="topicCount">0</strong>
+          <button class="topic-drawer-close" id="closeTopicDrawerButton" type="button" aria-label="Закрыть список тем">
+            <svg><use href="#icon-close"></use></svg>
+          </button>
         </div>
         <div class="topic-list" id="topicList"></div>
       </aside>

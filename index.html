@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Экстренная подготовка: Управление проектами</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -32,6 +32,12 @@
     </symbol>
     <symbol id="icon-check" viewBox="0 0 24 24">
       <path d="m5 13 4 4L19 7"></path>
+    </symbol>
+    <symbol id="icon-expand" viewBox="0 0 24 24">
+      <path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M3 15v4a2 2 0 0 0 2 2h4"></path>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6 6 18"></path>
     </symbol>
   </svg>
 
@@ -99,7 +105,14 @@
             <p class="eyebrow">Flashcards</p>
             <h2 id="cardTopic">Понятие</h2>
           </div>
-          <div class="counter" id="cardCounter">1 / 1</div>
+          <div class="panel-tools">
+            <div class="counter" id="cardCounter">1 / 1</div>
+            <button class="fullscreen-toggle" id="toggleFullscreenButton" type="button" aria-label="На весь экран" aria-pressed="false" title="На весь экран">
+              <svg class="icon-expand"><use href="#icon-expand"></use></svg>
+              <svg class="icon-close"><use href="#icon-close"></use></svg>
+              <span class="fullscreen-toggle-label">На весь экран</span>
+            </button>
+          </div>
         </div>
 
         <button class="flashcard" id="flashcard" type="button" aria-live="polite">
@@ -120,6 +133,7 @@
             <svg><use href="#icon-next"></use></svg>
           </button>
         </div>
+        <p class="fullscreen-hint" id="fullscreenHint">Нажми на карточку, чтобы перевернуть</p>
       </section>
 
       <section class="study-panel" id="quizView" aria-labelledby="quizModeButton">

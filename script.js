@@ -500,6 +500,7 @@ const defaultState = {
 
 let state = loadState();
 let activeMode = "flashcards";
+let cardFullscreen = false;
 let cardIndex = 0;
 let quizOrder = shuffle([...questions.keys()]);
 let quizIndex = 0;
@@ -527,6 +528,8 @@ const els = {
   flashcard: document.getElementById("flashcard"),
   prevCardButton: document.getElementById("prevCardButton"),
   nextCardButton: document.getElementById("nextCardButton"),
+  toggleFullscreenButton: document.getElementById("toggleFullscreenButton"),
+  fullscreenHint: document.getElementById("fullscreenHint"),
   quizTopic: document.getElementById("quizTopic"),
   quizCounter: document.getElementById("quizCounter"),
   questionText: document.getElementById("questionText"),
@@ -783,7 +786,42 @@ function showToast(badge) {
   setTimeout(() => toast.remove(), 3600);
 }
 
+function updateFullscreenUi() {
+  const label = els.toggleFullscreenButton.querySelector(".fullscreen-toggle-label");
+  if (label) {
+    label.textContent = cardFullscreen ? "Выйти" : "На весь экран";
+  }
+  els.toggleFullscreenButton.setAttribute("aria-pressed", String(cardFullscreen));
+  els.toggleFullscreenButton.setAttribute(
+    "aria-label",
+    cardFullscreen ? "Выйти из полноэкранного режима" : "Открыть карточки на весь экран"
+  );
+  els.toggleFullscreenButton.title = cardFullscreen ? "Выйти" : "На весь экран";
+}
+
+function setCardFullscreen(enabled) {
+  if (cardFullscreen === enabled) return;
+  cardFullscreen = enabled;
+  document.body.classList.toggle("card-fullscreen-active", enabled);
+  els.flashcardsView.classList.toggle("is-fullscreen", enabled);
+  updateFullscreenUi();
+
+  if (enabled && els.flashcardsView.requestFullscreen) {
+    els.flashcardsView.requestFullscreen().catch(() => {});
+  } else if (!enabled && document.fullscreenElement === els.flashcardsView) {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+function toggleCardFullscreen() {
+  setCardFullscreen(!cardFullscreen);
+}
+
 function setMode(mode) {
+  if (mode !== "flashcards" && cardFullscreen) {
+    setCardFullscreen(false);
+  }
+
   activeMode = mode;
   const isFlash = mode === "flashcards";
   const isQuiz = mode === "quiz";
@@ -814,6 +852,7 @@ function resetProgress() {
 els.flashcard.addEventListener("click", flipCard);
 els.nextCardButton.addEventListener("click", nextCard);
 els.prevCardButton.addEventListener("click", prevCard);
+els.toggleFullscreenButton.addEventListener("click", toggleCardFullscreen);
 els.nextQuestionButton.addEventListener("click", nextQuestion);
 els.restartQuizButton.addEventListener("click", restartQuiz);
 els.flashModeButton.addEventListener("click", () => setMode("flashcards"));
@@ -822,14 +861,30 @@ els.achievementsButton.addEventListener("click", () => setMode("achievements"));
 els.resetButton.addEventListener("click", resetProgress);
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && cardFullscreen) {
+    setCardFullscreen(false);
+    return;
+  }
+
   if (activeMode === "flashcards" && event.key === " ") {
     event.preventDefault();
     flipCard();
   }
   if (activeMode === "flashcards" && event.key === "ArrowRight") nextCard();
   if (activeMode === "flashcards" && event.key === "ArrowLeft") prevCard();
+  if (activeMode === "flashcards" && (event.key === "f" || event.key === "F")) {
+    toggleCardFullscreen();
+  }
 });
 
+document.addEventListener("fullscreenchange", () => {
+  const isNativeFullscreen = document.fullscreenElement === els.flashcardsView;
+  if (cardFullscreen && !isNativeFullscreen) {
+    setCardFullscreen(false);
+  }
+});
+
+updateFullscreenUi();
 renderStats();
 renderTopics();
 renderCard();

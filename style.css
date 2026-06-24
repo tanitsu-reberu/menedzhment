@@ -369,6 +369,56 @@ svg {
   font-weight: 800;
 }
 
+.panel-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fullscreen-toggle {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--text);
+  background: #101418;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.fullscreen-toggle:hover {
+  border-color: rgba(55, 212, 188, 0.65);
+  background: #151b20;
+}
+
+.fullscreen-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fullscreen-toggle .icon-close {
+  display: none;
+}
+
+.fullscreen-toggle-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.fullscreen-hint {
+  display: none;
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .flashcard {
   position: relative;
   display: block;
@@ -1039,6 +1089,119 @@ svg {
 
   .badge-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+body.card-fullscreen-active {
+  overflow: hidden;
+}
+
+body.card-fullscreen-active .topbar,
+body.card-fullscreen-active .level-strip,
+body.card-fullscreen-active .mode-tabs,
+body.card-fullscreen-active .topic-rail,
+body.card-fullscreen-active #quizView,
+body.card-fullscreen-active #achievementsView {
+  display: none !important;
+}
+
+body.card-fullscreen-active .app-shell {
+  width: 100%;
+  padding: 0;
+}
+
+body.card-fullscreen-active .workspace {
+  display: block;
+  min-height: 100dvh;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding:
+    calc(12px + env(safe-area-inset-top, 0px))
+    calc(12px + env(safe-area-inset-right, 0px))
+    calc(12px + env(safe-area-inset-bottom, 0px))
+    calc(12px + env(safe-area-inset-left, 0px));
+  border: none;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(55, 212, 188, 0.13), transparent 30rem),
+    linear-gradient(135deg, #0d0f12 0%, #11161b 52%, #171312 100%);
+  animation: none;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .panel-head {
+  margin-bottom: 0;
+  align-items: center;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .flashcard {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .flashcard-face {
+  min-height: 100%;
+  max-height: none;
+  height: 100%;
+  padding: clamp(20px, 4vw, 40px);
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .flashcard strong {
+  font-size: clamp(1.35rem, 5vw, 2.6rem);
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .flashcard-back strong {
+  font-size: clamp(1rem, 3.5vw, 1.65rem);
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .actions {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .fullscreen-hint {
+  display: block;
+  flex-shrink: 0;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .fullscreen-toggle {
+  border-color: rgba(255, 107, 107, 0.65);
+  color: var(--coral);
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .fullscreen-toggle .icon-expand {
+  display: none;
+}
+
+body.card-fullscreen-active #flashcardsView.is-fullscreen .fullscreen-toggle .icon-close {
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .fullscreen-toggle {
+    padding: 0 10px;
+  }
+
+  .fullscreen-toggle-label {
+    display: none;
+  }
+
+  body.card-fullscreen-active #flashcardsView.is-fullscreen .panel-head .eyebrow {
+    display: block;
   }
 }
 

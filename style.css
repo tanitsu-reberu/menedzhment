@@ -21,6 +21,8 @@
 html {
   min-height: 100%;
   background: var(--bg);
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -28,6 +30,8 @@ body {
   margin: 0;
   color: var(--text);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
   background:
     radial-gradient(circle at 20% 0%, rgba(55, 212, 188, 0.13), transparent 30rem),
     linear-gradient(135deg, #0d0f12 0%, #11161b 52%, #171312 100%);
@@ -44,7 +48,9 @@ button {
 .app-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 36px;
+  padding: 28px 0 calc(36px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
 }
 
 .topbar,
@@ -352,6 +358,8 @@ svg {
 }
 
 .flashcard {
+  position: relative;
+  display: block;
   width: 100%;
   min-height: 360px;
   border: 0;
@@ -361,6 +369,7 @@ svg {
   background: transparent;
   perspective: 1400px;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .flashcard-face {
@@ -674,13 +683,22 @@ svg {
 
 @media (max-width: 860px) {
   .app-shell {
-    width: min(100% - 20px, 680px);
-    padding-top: 18px;
+    width: calc(100% - 16px);
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
   }
 
   .topbar {
     align-items: stretch;
     flex-direction: column;
+    gap: 14px;
+  }
+
+  h1 {
+    font-size: clamp(1.55rem, 7vw, 2.4rem);
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 4.5vw, 1.65rem);
   }
 
   .stats-panel {
@@ -689,10 +707,12 @@ svg {
 
   .workspace {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .topic-rail {
     position: static;
+    padding: 12px;
   }
 
   .topic-list {
@@ -700,16 +720,210 @@ svg {
     overflow-x: auto;
     max-height: none;
     padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
   }
 
   .topic-button {
-    min-width: 230px;
+    min-width: 200px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .study-panel {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .flashcard,
+  .flashcard-face {
+    min-height: 280px;
+  }
+
+  .flashcard strong {
+    font-size: clamp(1.25rem, 5vw, 2rem);
+  }
+
+  .flashcard-face {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .toast-stack {
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: min(340px, calc(100% - 24px));
+  }
+
+  .xp-float {
+    top: calc(72px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    font-size: 1.4rem;
   }
 }
 
 @media (max-width: 560px) {
+  .app-shell {
+    width: calc(100% - 12px);
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+  }
+
+  .stat {
+    min-height: 56px;
+    padding: 10px 12px;
+  }
+
+  .stat strong {
+    font-size: 1.25rem;
+  }
+
   .mode-tabs {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .mode-tab {
+    min-height: 48px;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 4px;
+    font-size: 0.72rem;
+  }
+
+  .mode-tab svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stats-panel {
+    grid-template-columns: 1fr 1fr 40px;
+    gap: 8px;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 56px;
+    grid-column: auto;
+  }
+
+  .level-strip {
+    padding: 12px;
+  }
+
+  .level-meta {
+    font-size: 0.82rem;
+    gap: 8px;
+  }
+
+  .panel-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .panel-head > div:first-child {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .counter {
+    min-width: 64px;
+    flex-shrink: 0;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+
+  .actions {
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    flex: 1;
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+  }
+
+  .flashcard,
+  .flashcard-face {
+    min-height: 220px;
+  }
+
+  .flashcard strong {
+    font-size: clamp(1.1rem, 4.8vw, 1.55rem);
+  }
+
+  .flashcard-back strong {
+    font-size: clamp(0.95rem, 3.8vw, 1.2rem);
+  }
+
+  .flashcard-face {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .quiz-card {
+    padding: 14px;
+  }
+
+  .quiz-card p {
+    font-size: clamp(1rem, 4.2vw, 1.35rem);
+    margin-bottom: 14px;
+  }
+
+  .answer-button {
+    grid-template-columns: 28px 1fr;
+    min-height: 52px;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .answer-button span:first-child {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  .badge-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .badge {
+    min-height: 120px;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .badge strong {
+    font-size: 0.92rem;
+  }
+
+  .badge small {
+    font-size: 0.72rem;
+  }
+
+  .topic-button {
+    min-width: 170px;
+    min-height: 52px;
+  }
+
+  .topic-button strong {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .mode-tab span {
+    font-size: 0.65rem;
   }
 
   .stats-panel {
@@ -717,30 +931,13 @@ svg {
   }
 
   .icon-button {
-    width: 100%;
     grid-column: 1 / -1;
-    height: 46px;
-  }
-
-  .panel-head,
-  .actions,
-  .level-meta {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .primary-button,
-  .secondary-button {
     width: 100%;
+    height: 44px;
   }
 
-  .flashcard,
-  .flashcard-face {
-    min-height: 410px;
-  }
-
-  .answer-button {
-    grid-template-columns: 30px 1fr;
+  .badge-grid {
+    grid-template-columns: 1fr;
   }
 }
 

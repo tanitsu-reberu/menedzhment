@@ -503,6 +503,8 @@ let activeMode = "flashcards";
 let cardFullscreen = false;
 let nativeFullscreenActive = false;
 let topicDrawerOpen = false;
+let bodyScrollLockY = 0;
+let flashcardsViewAnchor = null;
 let cardIndex = 0;
 let quizOrder = shuffle([...questions.keys()]);
 let quizIndex = 0;
@@ -645,7 +647,7 @@ function renderTopics() {
       </span>
       <span class="topic-score">${studied}/${topicCards.length}</span>
     `;
-    button.addEventListener("click", () => {
+    bindTap(button, () => {
       cardIndex = firstCardIndex;
       setMode("flashcards");
       renderCard();
@@ -665,8 +667,115 @@ function isMobileLayout() {
   return window.matchMedia("(max-width: 860px)").matches;
 }
 
+function isInAppBrowser() {
+  const ua = navigator.userAgent || "";
+  return (
+    /Telegram|WhatsApp|Instagram|FBAN|FBAV|Line\/|Twitter|LinkedInApp|MicroMessenger|Snapchat/i.test(ua) ||
+    Boolean(window.Telegram?.WebApp)
+  );
+}
+
+function needsOverlayFullscreen() {
+  return isMobileLayout() || isInAppBrowser();
+}
+
 function supportsNativeFullscreen() {
-  return window.matchMedia("(pointer: fine) and (min-width: 861px)").matches;
+  return !needsOverlayFullscreen() && window.matchMedia("(pointer: fine) and (min-width: 861px)").matches;
+}
+
+function bindTap(element, handler) {
+  if (!element) return;
+
+  let touchStartY = 0;
+  let touchMoved = false;
+  let lastTouchEnd = 0;
+
+  element.addEventListener(
+    "touchstart",
+    (event) => {
+      touchStartY = event.changedTouches[0]?.clientY ?? 0;
+      touchMoved = false;
+    },
+    { passive: true }
+  );
+
+  element.addEventListener(
+    "touchmove",
+    (event) => {
+      const y = event.changedTouches[0]?.clientY ?? 0;
+      if (Math.abs(y - touchStartY) > 10) touchMoved = true;
+    },
+    { passive: true }
+  );
+
+  element.addEventListener(
+    "touchend",
+    (event) => {
+      if (touchMoved) return;
+      event.preventDefault();
+      lastTouchEnd = Date.now();
+      handler(event);
+    },
+    { passive: false }
+  );
+
+  element.addEventListener("click", (event) => {
+    if (Date.now() - lastTouchEnd < 400) {
+      event.preventDefault();
+      return;
+    }
+    handler(event);
+  });
+}
+
+function lockBodyScroll() {
+  if (document.body.classList.contains("scroll-locked")) return;
+  bodyScrollLockY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.top = `-${bodyScrollLockY}px`;
+  document.body.classList.add("scroll-locked");
+}
+
+function unlockBodyScroll() {
+  if (!document.body.classList.contains("scroll-locked")) return;
+  document.body.classList.remove("scroll-locked");
+  document.body.style.top = "";
+  window.scrollTo(0, bodyScrollLockY);
+  bodyScrollLockY = 0;
+}
+
+function updateBodyScrollLock() {
+  if (topicDrawerOpen || cardFullscreen) {
+    lockBodyScroll();
+  } else {
+    unlockBodyScroll();
+  }
+}
+
+function mountFullscreenToBody() {
+  if (!els.flashcardsView || els.flashcardsView.dataset.bodyMounted === "1") return;
+
+  flashcardsViewAnchor = {
+    parent: els.flashcardsView.parentElement,
+    nextSibling: els.flashcardsView.nextElementSibling
+  };
+  document.body.appendChild(els.flashcardsView);
+  els.flashcardsView.dataset.bodyMounted = "1";
+}
+
+function restoreFullscreenFromBody() {
+  if (!els.flashcardsView || els.flashcardsView.dataset.bodyMounted !== "1") return;
+
+  const { parent, nextSibling } = flashcardsViewAnchor || {};
+  if (parent) {
+    if (nextSibling && nextSibling.parentElement === parent) {
+      parent.insertBefore(els.flashcardsView, nextSibling);
+    } else {
+      parent.appendChild(els.flashcardsView);
+    }
+  }
+
+  delete els.flashcardsView.dataset.bodyMounted;
+  flashcardsViewAnchor = null;
 }
 
 function mountMobileDrawer() {
@@ -702,6 +811,7 @@ function setTopicDrawer(open) {
   if (els.topicRail) els.topicRail.classList.toggle("is-open", open);
   if (els.topicDrawerToggle) els.topicDrawerToggle.setAttribute("aria-expanded", String(open));
   if (els.topicDrawerBackdrop) els.topicDrawerBackdrop.setAttribute("aria-hidden", String(!open));
+  updateBodyScrollLock();
 }
 
 function openTopicDrawer() {
@@ -872,10 +982,21 @@ function updateFullscreenUi() {
 function setCardFullscreen(enabled) {
   if (cardFullscreen === enabled) return;
   if (enabled) closeTopicDrawer();
+
+  if (!enabled) {
+    restoreFullscreenFromBody();
+  }
+
   cardFullscreen = enabled;
   document.body.classList.toggle("card-fullscreen-active", enabled);
   els.flashcardsView.classList.toggle("is-fullscreen", enabled);
+
+  if (enabled && needsOverlayFullscreen()) {
+    mountFullscreenToBody();
+  }
+
   updateFullscreenUi();
+  updateBodyScrollLock();
 
   if (enabled && supportsNativeFullscreen() && els.flashcardsView.requestFullscreen) {
     nativeFullscreenActive = true;
@@ -932,32 +1053,25 @@ function resetProgress() {
 els.flashcard.addEventListener("click", flipCard);
 els.nextCardButton.addEventListener("click", nextCard);
 els.prevCardButton.addEventListener("click", prevCard);
-els.toggleFullscreenButton.addEventListener("click", (event) => {
+bindTap(els.toggleFullscreenButton, (event) => {
   event.preventDefault();
   toggleCardFullscreen();
 });
 
-if (els.topicDrawerToggle) {
-  els.topicDrawerToggle.addEventListener("click", (event) => {
-    event.preventDefault();
-    toggleTopicDrawer();
-  });
-}
+bindTap(els.topicDrawerToggle, (event) => {
+  event.preventDefault();
+  toggleTopicDrawer();
+});
 
-if (els.closeTopicDrawerButton) {
-  els.closeTopicDrawerButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    closeTopicDrawer();
-  });
-}
+bindTap(els.closeTopicDrawerButton, (event) => {
+  event.preventDefault();
+  closeTopicDrawer();
+});
 
-if (els.topicDrawerBackdrop) {
-  els.topicDrawerBackdrop.addEventListener("click", closeTopicDrawer);
-  els.topicDrawerBackdrop.addEventListener("touchend", (event) => {
-    event.preventDefault();
-    closeTopicDrawer();
-  });
-}
+bindTap(els.topicDrawerBackdrop, (event) => {
+  event.preventDefault();
+  closeTopicDrawer();
+});
 els.nextQuestionButton.addEventListener("click", nextQuestion);
 els.restartQuizButton.addEventListener("click", restartQuiz);
 els.flashModeButton.addEventListener("click", () => setMode("flashcards"));
@@ -998,8 +1112,17 @@ function handleFullscreenChange() {
 document.addEventListener("fullscreenchange", handleFullscreenChange);
 document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 
-window.addEventListener("resize", mountMobileDrawer);
-mountMobileDrawer();
+function handleLayoutChange() {
+  mountMobileDrawer();
+  if (cardFullscreen && needsOverlayFullscreen()) {
+    mountFullscreenToBody();
+  } else if (!cardFullscreen) {
+    restoreFullscreenFromBody();
+  }
+}
+
+window.addEventListener("resize", handleLayoutChange);
+handleLayoutChange();
 
 updateFullscreenUi();
 renderStats();

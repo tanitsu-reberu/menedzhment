@@ -338,6 +338,15 @@ svg {
   display: none;
 }
 
+body.scroll-locked {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
 .topic-drawer-toggle {
   align-items: center;
   gap: 10px;
@@ -351,6 +360,8 @@ svg {
   box-shadow: var(--shadow);
   text-align: left;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 180ms ease, background 180ms ease;
 }
 
@@ -394,18 +405,15 @@ svg {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 480;
-  background: rgba(4, 6, 8, 0.62);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 240ms ease;
+  z-index: 9998;
+  background: rgba(4, 6, 8, 0.72);
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
 body.topic-drawer-open .topic-drawer-backdrop {
   display: block;
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .topic-drawer-close {
@@ -418,6 +426,8 @@ body.topic-drawer-open .topic-drawer-backdrop {
   color: var(--muted);
   background: #101418;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: color 180ms ease, border-color 180ms ease;
 }
 
@@ -493,6 +503,8 @@ body.topic-drawer-open .topic-drawer-backdrop {
   color: var(--text);
   background: #101418;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
 }
 
@@ -993,7 +1005,9 @@ body.topic-drawer-open .topic-drawer-backdrop {
     top: 0;
     left: 0;
     bottom: 0;
-    z-index: 490;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
     width: min(300px, 86vw);
     margin: 0;
     padding:
@@ -1005,24 +1019,12 @@ body.topic-drawer-open .topic-drawer-backdrop {
     border-left: none;
     border-top: none;
     border-bottom: none;
-    transform: translate3d(-105%, 0, 0);
-    -webkit-transform: translate3d(-105%, 0, 0);
-    transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
-    will-change: transform;
     overflow: hidden;
-    visibility: hidden;
-    pointer-events: none;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
   }
 
   .topic-rail.is-open {
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  body.topic-drawer-open {
-    overflow: hidden;
+    display: flex;
   }
 
   .rail-head {
@@ -1276,14 +1278,16 @@ body.card-fullscreen-active .workspace {
 body.card-fullscreen-active #flashcardsView.is-fullscreen {
   position: fixed;
   inset: 0;
-  z-index: 400;
+  z-index: 10000;
   display: flex !important;
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  min-height: 100vh;
   height: 100vh;
-  height: 100dvh;
   max-height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   max-height: 100dvh;
   margin: 0;
   padding:

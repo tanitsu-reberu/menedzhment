@@ -501,6 +501,7 @@ const defaultState = {
 let state = loadState();
 let activeMode = "flashcards";
 let cardFullscreen = false;
+let nativeFullscreenActive = false;
 let topicDrawerOpen = false;
 let cardIndex = 0;
 let quizOrder = shuffle([...questions.keys()]);
@@ -660,13 +661,47 @@ function updateActiveTopicLabel() {
   }
 }
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function supportsNativeFullscreen() {
+  return window.matchMedia("(pointer: fine) and (min-width: 861px)").matches;
+}
+
+function mountMobileDrawer() {
+  if (!els.topicRail || !els.topicDrawerBackdrop) return;
+  const workspace = document.querySelector(".workspace");
+  const anchor = els.flashcardsView;
+  if (!workspace || !anchor) return;
+
+  if (isMobileLayout()) {
+    if (els.topicDrawerBackdrop.parentElement !== document.body) {
+      document.body.appendChild(els.topicDrawerBackdrop);
+    }
+    if (els.topicRail.parentElement !== document.body) {
+      document.body.appendChild(els.topicRail);
+    }
+    return;
+  }
+
+  closeTopicDrawer();
+  if (els.topicDrawerBackdrop.parentElement !== workspace) {
+    workspace.insertBefore(els.topicDrawerBackdrop, anchor);
+  }
+  if (els.topicRail.parentElement !== workspace) {
+    workspace.insertBefore(els.topicRail, anchor);
+  }
+}
+
 function setTopicDrawer(open) {
   if (topicDrawerOpen === open) return;
+  mountMobileDrawer();
   topicDrawerOpen = open;
   document.body.classList.toggle("topic-drawer-open", open);
-  els.topicRail.classList.toggle("is-open", open);
-  els.topicDrawerToggle.setAttribute("aria-expanded", String(open));
-  els.topicDrawerBackdrop.hidden = !open;
+  if (els.topicRail) els.topicRail.classList.toggle("is-open", open);
+  if (els.topicDrawerToggle) els.topicDrawerToggle.setAttribute("aria-expanded", String(open));
+  if (els.topicDrawerBackdrop) els.topicDrawerBackdrop.setAttribute("aria-hidden", String(!open));
 }
 
 function openTopicDrawer() {
@@ -842,10 +877,16 @@ function setCardFullscreen(enabled) {
   els.flashcardsView.classList.toggle("is-fullscreen", enabled);
   updateFullscreenUi();
 
-  if (enabled && els.flashcardsView.requestFullscreen) {
-    els.flashcardsView.requestFullscreen().catch(() => {});
-  } else if (!enabled && document.fullscreenElement === els.flashcardsView) {
+  if (enabled && supportsNativeFullscreen() && els.flashcardsView.requestFullscreen) {
+    nativeFullscreenActive = true;
+    els.flashcardsView.requestFullscreen().catch(() => {
+      nativeFullscreenActive = false;
+    });
+  } else if (!enabled && document.fullscreenElement) {
+    nativeFullscreenActive = false;
     document.exitFullscreen().catch(() => {});
+  } else if (!enabled) {
+    nativeFullscreenActive = false;
   }
 }
 
@@ -864,7 +905,7 @@ function setMode(mode) {
   const isQuiz = mode === "quiz";
   const isAchievements = mode === "achievements";
 
-  els.topicDrawerToggle.hidden = isAchievements;
+  if (els.topicDrawerToggle) els.topicDrawerToggle.hidden = isAchievements;
 
   els.flashModeButton.classList.toggle("active", isFlash);
   els.quizModeButton.classList.toggle("active", isQuiz);
@@ -891,10 +932,32 @@ function resetProgress() {
 els.flashcard.addEventListener("click", flipCard);
 els.nextCardButton.addEventListener("click", nextCard);
 els.prevCardButton.addEventListener("click", prevCard);
-els.toggleFullscreenButton.addEventListener("click", toggleCardFullscreen);
-els.topicDrawerToggle.addEventListener("click", toggleTopicDrawer);
-els.closeTopicDrawerButton.addEventListener("click", closeTopicDrawer);
-els.topicDrawerBackdrop.addEventListener("click", closeTopicDrawer);
+els.toggleFullscreenButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  toggleCardFullscreen();
+});
+
+if (els.topicDrawerToggle) {
+  els.topicDrawerToggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleTopicDrawer();
+  });
+}
+
+if (els.closeTopicDrawerButton) {
+  els.closeTopicDrawerButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    closeTopicDrawer();
+  });
+}
+
+if (els.topicDrawerBackdrop) {
+  els.topicDrawerBackdrop.addEventListener("click", closeTopicDrawer);
+  els.topicDrawerBackdrop.addEventListener("touchend", (event) => {
+    event.preventDefault();
+    closeTopicDrawer();
+  });
+}
 els.nextQuestionButton.addEventListener("click", nextQuestion);
 els.restartQuizButton.addEventListener("click", restartQuiz);
 els.flashModeButton.addEventListener("click", () => setMode("flashcards"));
@@ -924,12 +987,19 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.addEventListener("fullscreenchange", () => {
-  const isNativeFullscreen = document.fullscreenElement === els.flashcardsView;
-  if (cardFullscreen && !isNativeFullscreen) {
-    setCardFullscreen(false);
+function handleFullscreenChange() {
+  if (!nativeFullscreenActive) return;
+  if (!document.fullscreenElement) {
+    nativeFullscreenActive = false;
+    if (cardFullscreen) setCardFullscreen(false);
   }
-});
+}
+
+document.addEventListener("fullscreenchange", handleFullscreenChange);
+document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+
+window.addEventListener("resize", mountMobileDrawer);
+mountMobileDrawer();
 
 updateFullscreenUi();
 renderStats();

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Экстренная подготовка: Управление проектами</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="icon-card" viewBox="0 0 24 24">
+      <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+      <path d="M8 9h8M8 13h5"></path>
+    </symbol>
+    <symbol id="icon-quiz" viewBox="0 0 24 24">
+      <path d="M9 9a3 3 0 1 1 5 2.6c-1.3.7-2 1.5-2 3"></path>
+      <path d="M12 18h.01"></path>
+      <circle cx="12" cy="12" r="9"></circle>
+    </symbol>
+    <symbol id="icon-trophy" viewBox="0 0 24 24">
+      <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+      <path d="M8 6H5a2 2 0 0 0 2 4h1"></path>
+      <path d="M16 6h3a2 2 0 0 1-2 4h-1"></path>
+      <path d="M12 12v5M9 20h6M10 17h4"></path>
+    </symbol>
+    <symbol id="icon-reset" viewBox="0 0 24 24">
+      <path d="M4 12a8 8 0 1 0 2.3-5.7"></path>
+      <path d="M4 4v6h6"></path>
+    </symbol>
+    <symbol id="icon-next" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6"></path>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="m5 13 4 4L19 7"></path>
+    </symbol>
+  </svg>
+
+  <main class="app-shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">Экзамен через 2 дня</p>
+        <h1>Управление проектами</h1>
+      </div>
+      <div class="stats-panel" aria-live="polite">
+        <div class="stat">
+          <span>XP</span>
+          <strong id="xpValue">0</strong>
+        </div>
+        <div class="stat">
+          <span>Уровень</span>
+          <strong id="levelValue">1</strong>
+        </div>
+        <button class="icon-button" id="resetButton" type="button" aria-label="Сбросить прогресс" title="Сбросить прогресс">
+          <svg><use href="#icon-reset"></use></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="level-strip">
+      <div class="level-meta">
+        <span id="levelTitle">Новичок проекта</span>
+        <span id="levelProgressLabel">0 / 120 XP</span>
+      </div>
+      <div class="progress-track" aria-label="Прогресс уровня">
+        <div class="progress-fill" id="levelProgress"></div>
+      </div>
+    </section>
+
+    <section class="mode-tabs" role="tablist" aria-label="Режим тренировки">
+      <button class="mode-tab active" id="flashModeButton" type="button" role="tab" aria-selected="true">
+        <svg><use href="#icon-card"></use></svg>
+        <span>Карточки</span>
+      </button>
+      <button class="mode-tab" id="quizModeButton" type="button" role="tab" aria-selected="false">
+        <svg><use href="#icon-quiz"></use></svg>
+        <span>Блиц-тест</span>
+      </button>
+      <button class="mode-tab" id="achievementsButton" type="button" role="tab" aria-selected="false">
+        <svg><use href="#icon-trophy"></use></svg>
+        <span>Бейджи</span>
+      </button>
+    </section>
+
+    <section class="workspace">
+      <aside class="topic-rail" aria-label="Темы экзамена">
+        <div class="rail-head">
+          <span>Темы</span>
+          <strong id="topicCount">0</strong>
+        </div>
+        <div class="topic-list" id="topicList"></div>
+      </aside>
+
+      <section class="study-panel active" id="flashcardsView" aria-labelledby="flashModeButton">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Flashcards</p>
+            <h2 id="cardTopic">Понятие</h2>
+          </div>
+          <div class="counter" id="cardCounter">1 / 1</div>
+        </div>
+
+        <button class="flashcard" id="flashcard" type="button" aria-live="polite">
+          <span class="flashcard-face flashcard-front">
+            <span class="tag" id="cardPriority">Приоритет</span>
+            <strong id="cardTerm">Термин</strong>
+          </span>
+          <span class="flashcard-face flashcard-back">
+            <span class="tag">Разбор</span>
+            <strong id="cardAnswer">Объяснение</strong>
+          </span>
+        </button>
+
+        <div class="actions">
+          <button class="secondary-button" id="prevCardButton" type="button">Назад</button>
+          <button class="primary-button" id="nextCardButton" type="button">
+            <span>Следующая</span>
+            <svg><use href="#icon-next"></use></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="study-panel" id="quizView" aria-labelledby="quizModeButton">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Blitz</p>
+            <h2 id="quizTopic">Вопрос</h2>
+          </div>
+          <div class="counter" id="quizCounter">1 / 1</div>
+        </div>
+
+        <div class="quiz-card">
+          <p id="questionText">Вопрос</p>
+          <div class="answers" id="answers"></div>
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+        </div>
+
+        <div class="actions">
+          <button class="secondary-button" id="restartQuizButton" type="button">Перемешать</button>
+          <button class="primary-button" id="nextQuestionButton" type="button" disabled>
+            <span>Дальше</span>
+            <svg><use href="#icon-next"></use></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="study-panel" id="achievementsView" aria-labelledby="achievementsButton">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Награды</p>
+            <h2>Бейджи подготовки</h2>
+          </div>
+          <div class="counter" id="achievementCounter">0 / 0</div>
+        </div>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <div class="xp-float" id="xpFloat" aria-hidden="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

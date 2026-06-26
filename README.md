@@ -1,5 +1,6 @@
-# Управление проектами
+# Архив
 
-Экстренная подготовка к экзамену: карточки, блиц-тест, бейджи.
+Сайт «Управление проектами» снят с публикации.
 
-Сайт: https://tanitsu-reberu.github.io/menedzhment/
+Новый проект: [informatika-ekzamen](https://github.com/tanitsu-reberu/informatika-ekzamen)  
+Сайт: https://tanitsu-reberu.github.io/informatika-ekzamen/
